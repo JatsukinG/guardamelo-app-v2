@@ -1,0 +1,451 @@
+"""Exposes a URL that specifies the behavior of this scalar."""
+directive @specifiedBy(
+  """The URL that specifies the behavior of this scalar."""
+  url: String!
+) on SCALAR
+
+input ChangePasswordInput {
+  currentPassword: String!
+  newPassword: String!
+  clientMutationId: String
+}
+
+type ChangePasswordPayload {
+  user: UserNode
+  clientMutationId: String
+}
+
+input CreateNoteInput {
+  projectId: ID!
+  title: String!
+  content: String
+  clientMutationId: String
+}
+
+type CreateNotePayload {
+  note: NoteNode
+  clientMutationId: String
+}
+
+input CreateProjectInput {
+  name: String!
+  description: String
+  clientMutationId: String
+}
+
+type CreateProjectPayload {
+  project: ProjectNode
+  clientMutationId: String
+}
+
+input CreateResourceInput {
+  title: String!
+  content: String!
+  description: String
+  image: String
+  tags: JSONString
+  clientMutationId: String
+}
+
+type CreateResourcePayload {
+  resource: ResourceNode
+  clientMutationId: String
+}
+
+input CreateUserInput {
+  firstName: String!
+  lastName: String!
+  phone: String
+  email: String!
+  password: String!
+  clientMutationId: String
+}
+
+type CreateUserPayload {
+  user: UserNode
+  clientMutationId: String
+}
+
+"""
+The `DateTime` scalar type represents a DateTime
+value as specified by
+[iso8601](https://en.wikipedia.org/wiki/ISO_8601).
+"""
+scalar DateTime
+
+input DeleteNoteInput {
+  id: ID!
+  clientMutationId: String
+}
+
+type DeleteNotePayload {
+  success: Boolean
+  clientMutationId: String
+}
+
+input DeleteProjectInput {
+  id: ID!
+  clientMutationId: String
+}
+
+type DeleteProjectPayload {
+  success: Boolean
+  clientMutationId: String
+}
+
+input DeleteResourceInput {
+  id: ID!
+  clientMutationId: String
+}
+
+type DeleteResourcePayload {
+  success: Boolean
+  clientMutationId: String
+}
+
+"""
+The `GenericScalar` scalar type represents a generic
+GraphQL scalar value that could be:
+String, Boolean, Int, Float, List or Object.
+"""
+scalar GenericScalar
+
+"""
+Allows use of a JSON String for input / output from the GraphQL schema.
+
+Use of this type is *not recommended* as you lose the benefits of having a defined, static
+schema (one of the key benefits of GraphQL).
+"""
+scalar JSONString
+
+type Mutation {
+  createResource(input: CreateResourceInput!): CreateResourcePayload
+  updateResource(input: UpdateResourceInput!): UpdateResourcePayload
+  deleteResource(input: DeleteResourceInput!): DeleteResourcePayload
+  createProject(input: CreateProjectInput!): CreateProjectPayload
+  updateProject(input: UpdateProjectInput!): UpdateProjectPayload
+  deleteProject(input: DeleteProjectInput!): DeleteProjectPayload
+  createNote(input: CreateNoteInput!): CreateNotePayload
+  updateNote(input: UpdateNoteInput!): UpdateNotePayload
+  deleteNote(input: DeleteNoteInput!): DeleteNotePayload
+  updateNoteVisibility(input: UpdateNoteVisibilityInput!): UpdateNoteVisibilityPayload
+
+  """Obtain JSON Web Token mutation"""
+  tokenAuth(email: String!, password: String!): ObtainJSONWebToken
+  verifyToken(token: String): Verify
+  refreshToken(token: String): Refresh
+  createUser(input: CreateUserInput!): CreateUserPayload
+  updateUser(input: UpdateMeInput!): UpdateMePayload
+  changePassword(input: ChangePasswordInput!): ChangePasswordPayload
+}
+
+"""An object with an ID"""
+interface Node {
+  """The ID of the object"""
+  id: ID!
+}
+
+type NoteNode implements Node {
+  """The ID of the object"""
+  id: ID!
+  project: ProjectNode!
+  title: String!
+  content: String!
+  visibility: ProjectsNoteVisibilityChoices!
+
+  """Users who can view this note if visibility is set to 'shared'."""
+  sharedWith(offset: Int, before: String, after: String, first: Int, last: Int): UserNodeConnection!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+}
+
+type NoteNodeConnection {
+  """Pagination data for this connection."""
+  pageInfo: PageInfo!
+
+  """Contains the nodes in this connection."""
+  edges: [NoteNodeEdge]!
+}
+
+"""A Relay edge containing a `NoteNode` and its cursor."""
+type NoteNodeEdge {
+  """The item at the end of the edge"""
+  node: NoteNode
+
+  """A cursor for use in pagination"""
+  cursor: String!
+}
+
+"""Obtain JSON Web Token mutation"""
+type ObtainJSONWebToken {
+  payload: GenericScalar!
+  refreshExpiresIn: Int!
+  token: String!
+}
+
+"""
+The Relay compliant `PageInfo` type, containing data necessary to paginate this connection.
+"""
+type PageInfo {
+  """When paginating forwards, are there more items?"""
+  hasNextPage: Boolean!
+
+  """When paginating backwards, are there more items?"""
+  hasPreviousPage: Boolean!
+
+  """When paginating backwards, the cursor to continue."""
+  startCursor: String
+
+  """When paginating forwards, the cursor to continue."""
+  endCursor: String
+}
+
+type ProjectNode implements Node {
+  """The ID of the object"""
+  id: ID!
+  name: String!
+  description: String
+  user: UserNode!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+  notes(
+    offset: Int
+    before: String
+    after: String
+    first: Int
+    last: Int
+    createdAt: DateTime
+    createdAt_Lt: DateTime
+    createdAt_Lte: DateTime
+    createdAt_Gt: DateTime
+    createdAt_Gte: DateTime
+    title_Icontains: String
+
+    """Ordering"""
+    orderBy: String
+  ): NoteNodeConnection!
+}
+
+type ProjectNodeConnection {
+  """Pagination data for this connection."""
+  pageInfo: PageInfo!
+
+  """Contains the nodes in this connection."""
+  edges: [ProjectNodeEdge]!
+}
+
+"""A Relay edge containing a `ProjectNode` and its cursor."""
+type ProjectNodeEdge {
+  """The item at the end of the edge"""
+  node: ProjectNode
+
+  """A cursor for use in pagination"""
+  cursor: String!
+}
+
+"""An enumeration."""
+enum ProjectsNoteVisibilityChoices {
+  """Pública"""
+  PUBLIC
+
+  """Privada"""
+  PRIVATE
+
+  """Compartida"""
+  SHARED
+}
+
+type Query {
+  resource(
+    """The ID of the object"""
+    id: ID!
+  ): ResourceNode
+  resources(offset: Int, before: String, after: String, first: Int, last: Int): ResourceNodeConnection
+  project(
+    """The ID of the object"""
+    id: ID!
+  ): ProjectNode
+  projects(offset: Int, before: String, after: String, first: Int, last: Int): ProjectNodeConnection
+  note(
+    """The ID of the object"""
+    id: ID!
+  ): NoteNode
+  notes(
+    projectId: String!
+    offset: Int
+    before: String
+    after: String
+    first: Int
+    last: Int
+    createdAt: DateTime
+    createdAt_Lt: DateTime
+    createdAt_Lte: DateTime
+    createdAt_Gt: DateTime
+    createdAt_Gte: DateTime
+    title_Icontains: String
+
+    """Ordering"""
+    orderBy: String
+  ): NoteNodeConnection
+  me: UserNode
+}
+
+type Refresh {
+  payload: GenericScalar!
+  refreshExpiresIn: Int!
+  token: String!
+}
+
+type ResourceNode implements Node {
+  """The ID of the object"""
+  id: ID!
+  title: String!
+  description: String
+  content: String!
+  image: String
+  author: UserNode!
+  tags: JSONString!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+}
+
+type ResourceNodeConnection {
+  """Pagination data for this connection."""
+  pageInfo: PageInfo!
+
+  """Contains the nodes in this connection."""
+  edges: [ResourceNodeEdge]!
+}
+
+"""A Relay edge containing a `ResourceNode` and its cursor."""
+type ResourceNodeEdge {
+  """The item at the end of the edge"""
+  node: ResourceNode
+
+  """A cursor for use in pagination"""
+  cursor: String!
+}
+
+input UpdateMeInput {
+  firstName: String!
+  lastName: String!
+  phone: String
+  email: String!
+  clientMutationId: String
+}
+
+type UpdateMePayload {
+  user: UserNode
+  clientMutationId: String
+}
+
+input UpdateNoteInput {
+  id: ID!
+  title: String
+  content: String
+  clientMutationId: String
+}
+
+type UpdateNotePayload {
+  note: NoteNode
+  clientMutationId: String
+}
+
+input UpdateNoteVisibilityInput {
+  id: ID!
+  visibility: String!
+  sharedWith: [ID]
+  clientMutationId: String
+}
+
+type UpdateNoteVisibilityPayload {
+  success: Boolean
+  clientMutationId: String
+}
+
+input UpdateProjectInput {
+  id: ID!
+  name: String!
+  description: String
+  clientMutationId: String
+}
+
+type UpdateProjectPayload {
+  project: ProjectNode
+  clientMutationId: String
+}
+
+input UpdateResourceInput {
+  id: ID!
+  title: String
+  content: String
+  description: String
+  image: String
+  tags: JSONString
+  clientMutationId: String
+}
+
+type UpdateResourcePayload {
+  resource: ResourceNode
+  clientMutationId: String
+}
+
+type UserNode implements Node {
+  """The ID of the object"""
+  id: ID!
+  password: String!
+  lastLogin: DateTime
+
+  """
+  Designates that this user has all permissions without explicitly assigning them.
+  """
+  isSuperuser: Boolean!
+  firstName: String!
+  lastName: String!
+  phone: String
+  email: String!
+  isStaff: Boolean!
+  isActive: Boolean!
+  projects(offset: Int, before: String, after: String, first: Int, last: Int): ProjectNodeConnection!
+
+  """Users who can view this note if visibility is set to 'shared'."""
+  sharedNotes(
+    offset: Int
+    before: String
+    after: String
+    first: Int
+    last: Int
+    createdAt: DateTime
+    createdAt_Lt: DateTime
+    createdAt_Lte: DateTime
+    createdAt_Gt: DateTime
+    createdAt_Gte: DateTime
+    title_Icontains: String
+
+    """Ordering"""
+    orderBy: String
+  ): NoteNodeConnection!
+  resources(offset: Int, before: String, after: String, first: Int, last: Int): ResourceNodeConnection!
+}
+
+type UserNodeConnection {
+  """Pagination data for this connection."""
+  pageInfo: PageInfo!
+
+  """Contains the nodes in this connection."""
+  edges: [UserNodeEdge]!
+}
+
+"""A Relay edge containing a `UserNode` and its cursor."""
+type UserNodeEdge {
+  """The item at the end of the edge"""
+  node: UserNode
+
+  """A cursor for use in pagination"""
+  cursor: String!
+}
+
+type Verify {
+  payload: GenericScalar!
+}
+
